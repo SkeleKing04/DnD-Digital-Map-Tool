@@ -1,20 +1,65 @@
-// MapTool.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
+#include "glad.h"
+#include <GLFW/glfw3.h>
 #include <iostream>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+const int windowWidth = 1280;
+const int windowHeight = 720;
+
+/// <summary>
+/// Setup of custom error msgs.
+/// Default msg is "There was an error! Code: codeNum"
+/// </summary>
+/// <param name="Code number"></param>
+/// <returns>int</returns>
+static int ErLg(int code) {
+	const char* text = "There was an error!";
+	switch (code) {
+	case -1:
+		text = "GLFW failed to initialize!";
+		break;
+	case -2:
+		text = "The window failed to be created!";
+		break;
+	case -3:
+		text = "Glad failed to load OpenGL!";
+		break;
+	}
+	std::cout << text << "\nCode: " << code << std::endl;
+	return code;
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+int main() {
+	//Initialize GLFW
+	if (glfwInit() == false)
+		return ErLg(-1);
+	//Create the window instance
+	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "D&D Map Tool", nullptr, nullptr);
+	//Check if the window was succfully created...
+	if (window == nullptr) {
+		//...terminate process if failed
+		glfwTerminate();
+		return ErLg(-2);
+	}
+	//Make the window context the current on the calling thread - thats what glfw says
+	glfwMakeContextCurrent(window);
+	//Have Glad load OpenGL...
+	if (!gladLoadGL()) {
+		//...terminate process if failed
+		glfwDestroyWindow(window);
+		glfwTerminate();
+		return ErLg(-3);
+	}
+	//Print the current OpenGL version to the console
+	printf("GL: %i.%i\n", GLVersion.major, GLVersion.minor);
+	//Close if the window closes or the ESC key is pressed
+	while (glfwWindowShouldClose(window) == false && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
+		//logic here
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+	//Terminate the process
+	glfwDestroyWindow(window);
+	glfwTerminate();
+	return 0;
+}
